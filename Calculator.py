@@ -1,5 +1,5 @@
 #przepisać tworzenie przycisków na klasy i tworzenie obiektów z listy rzeczy do stworzenia
-#memory 
+#memory może narazie dodawać tylko pojedyncze liczby = najpierw powinno policzyć wyrażenie a dopiero potem je zapisać
 #działania na liczbach
 #dzielenie przez zero
 
@@ -7,10 +7,12 @@
 #import library
 from tkinter import * 
 from tkinter import font
+import re
+from math import *
 
 
 countClicked = 0
-memory = None
+memory = 0
 
 #initialization Application
 def initApp():
@@ -28,7 +30,31 @@ def initApp():
     resultLabel = Entry(mainWindow, width=20, font=designFont)
     resultLabel.grid(row=0, column=0, columnspan=4, padx=10, pady=15)
 
-    
+    # make calculations
+    def makeResult():
+        #multiply and devide
+        preResult = resultLabel.get()
+        tempResult = re.findall(r"((\d*\.?\d*)(\*|\/){1}(\d*\.?\d*)){1,}",preResult)
+        # print(preResult)
+        # print(tempResult)
+        # print(tempResult[0][1])
+        # print(tempResult[0][2])
+        # print(tempResult[0][3])
+        if(tempResult[0][2] == "*"):
+            result = round(float(tempResult[0][1])*float(tempResult[0][3]))
+        if(tempResult[0][2] == "/"):
+            if(tempResult[0][3] == "0"):
+                resultLabel.delete(0,END)
+                resultLabel.insert(0, "Math ERROR!")
+                return
+            else:
+                result = round(float(tempResult[0][1])/float(tempResult[0][3]))
+        resultLabel.delete(0,END)
+        resultLabel.insert(0, str(float(result)))
+        print(result)
+        
+        
+
 
     #set parameters for main window app
     def settingMainWindowParameters():
@@ -60,7 +86,7 @@ def initApp():
                     return
                 if (resultLabel.get()[-1] == "+" and number == "*"):  
                     return
-                if (resultLabel.get()[-1] == "+" and number == ","):  
+                if (resultLabel.get()[-1] == "+" and number == "."):  
                     return
                 if (resultLabel.get()[-1] == "-" and number == "+"):  
                     return
@@ -68,29 +94,29 @@ def initApp():
                     return
                 if (resultLabel.get()[-1] == "-" and number == "/"):  
                     return
-                if (resultLabel.get()[-1] == "-" and number == ","):  
+                if (resultLabel.get()[-1] == "-" and number == "."):  
                     return
                 if (resultLabel.get()[-1] == "*" and number == "*"):  
                     return
                 if (resultLabel.get()[-1] == "*" and number == "/"):  
                     return
-                if (resultLabel.get()[-1] == "*" and number == ","):  
+                if (resultLabel.get()[-1] == "*" and number == "."):  
                     return
                 if (resultLabel.get()[-1] == "/" and number == "*"):  
                     return
                 if (resultLabel.get()[-1] == "/" and number == "/"):  
                     return
-                if (resultLabel.get()[-1] == "/" and number == ","):  
+                if (resultLabel.get()[-1] == "/" and number == "."):  
                     return
-                if (resultLabel.get()[-1] == "," and number == "+"):  
+                if (resultLabel.get()[-1] == "." and number == "+"):  
                     return
-                if (resultLabel.get()[-1] == "," and number == "-"):  
+                if (resultLabel.get()[-1] == "." and number == "-"):  
                     return
-                if (resultLabel.get()[-1] == "," and number == "/"):  
+                if (resultLabel.get()[-1] == "." and number == "/"):  
                     return
-                if (resultLabel.get()[-1] == "," and number == "*"):  
+                if (resultLabel.get()[-1] == "." and number == "*"):  
                     return
-                if (resultLabel.get()[-1] == "," and number == ","):  
+                if (resultLabel.get()[-1] == "." and number == "."):  
                     return
                 if (resultLabel.get()[-1] == "-" and number == "-"):
                     print("nie wiem po co print ale bez niego nie działa")
@@ -130,40 +156,54 @@ def initApp():
 
         def buttonMemoryPlus():
             global memory
-            memory = resultLabel.get()
+            if (len(resultLabel.get())>0):
+                memory = memory + int(resultLabel.get())
+                print(memory)
             
 
         def buttonMemoryMinus():
             global memory
-            memory = None
+            if (len(resultLabel.get())>0):
+                memory = memory - int(resultLabel.get())
+                print(memory)
         
         def buttonMemoryClear():
-            return
+            global memory
+            memory = 0
+            print(memory)
         
         def buttonMemorySave():
-            return
+            global memory
+            if (len(resultLabel.get())>0):
+
+                memory = int(resultLabel.get())
+                print(memory)
         
         def buttonMemoryRead():
-            return
+            
+            resultLabel.insert(len(resultLabel.get()), memory)
+            print(memory)
         
         def buttonChangeFirstSign():
             if (len(resultLabel.get()) > 0 and resultLabel.get()[0] == "+"):
                     temp = resultLabel.get().replace("+","")
                     resultLabel.delete(0,END)
                     resultLabel.insert(0, "-" + str(temp))
+                    return
+            
+            if (len(resultLabel.get()) > 0 and resultLabel.get()[0] == "-"):
+                    temp = resultLabel.get().replace("-","")
+                    resultLabel.delete(0,END)
+                    resultLabel.insert(0, "+" + str(temp))
             try:
                 int(resultLabel.get()[0])
             except:
                 return
             else:
                 print('llll')
-                # if (type(resultLabel.get()[0]) == int):
-                #     resultLabel.insert(0,"-")
-                #     # temp = resultLabel.get()
-                #     # resultLabel.insert(0, "-" + str(temp))
-                # else:
-                #     resultLabel.insert(0,"")
-                # print(resultLabel.get())
+                temp = resultLabel.get()
+                resultLabel.delete(0,END)
+                resultLabel.insert(0, "-" + str(temp))
             
 
         def buttonDeleteLastSign():
@@ -173,6 +213,11 @@ def initApp():
             
 
         def buttonEqual():
+            #show result
+            makeResult()
+            # resultLabel.delete(0,END)
+            # resultLabel.insert(0, str(makeResult()))
+
             global countClicked
             countClicked = len(resultLabel.get())
             
@@ -214,7 +259,7 @@ def initApp():
             btnMinus = Button(mainWindow, text="-", pady=10, width=4, font= designFont,  command=lambda: buttonClick("-"), borderwidth=1, relief="solid", bg="#e8e8e8", activebackground="#8ff584")
             btnPlus = Button(mainWindow, text="+", pady=10, width=4, font= designFont,  command=lambda: buttonClick("+"), borderwidth=1, relief="solid", bg="#e8e8e8", activebackground="#8ff584")
             btnEqual = Button(mainWindow, text="=", pady=10, width=4, font= designFont,  command=buttonEqual, borderwidth=1, relief="solid", bg="#4082ed", activebackground="#8ff584")
-            btnComma = Button(mainWindow, text=",", pady=10, width=4, font= designFont,  command=lambda: buttonClick(","), borderwidth=1, relief="solid", bg="#e8e8e8", activebackground="#8ff584")
+            btnComma = Button(mainWindow, text=".", pady=10, width=4, font= designFont,  command=lambda: buttonClick("."), borderwidth=1, relief="solid", bg="#e8e8e8", activebackground="#8ff584")
 
 
             #gridding buttons
@@ -222,28 +267,30 @@ def initApp():
             btnMemoryPlus.grid(row=1, column=1, pady=4, padx=4)
             btnMemoryMinus.grid(row=1, column=2, pady=4, padx=4)
             btnMemorySave.grid(row=1, column=3, pady=4, padx=4)
-            btnChangeFirstSign.grid(row=2, column=0, pady=4, padx=4)
-            btnMemoryClear.grid(row=2, column=1, pady=4, padx=4)
-            btnClear.grid(row=2, column=2, pady=4, padx=4)
-            btnDeleteLastSign.grid(row=2, column=3, pady=4, padx=4)
+            btnChangeFirstSign.grid(row=6, column=0, pady=4, padx=4)
+            btnMemoryClear.grid(row=2, column=0, pady=4, padx=4)
+            btnClear.grid(row=2, column=1, pady=4, padx=4)
+            btnDeleteLastSign.grid(row=2, column=2, pady=4, padx=4)
             btn7.grid(row=3, column=0, pady=4, padx=4)
             btn8.grid(row=3, column=1, pady=4, padx=4)
             btn9.grid(row=3, column=2, pady=4, padx=4)
-            btnDivide.grid(row=3, column=3, pady=4, padx=4)
+            btnDivide.grid(row=2, column=3, pady=4, padx=4)
             btn4.grid(row=4, column=0, pady=4, padx=4)
             btn5.grid(row=4, column=1, pady=4, padx=4)
             btn6.grid(row=4, column=2, pady=4, padx=4)
-            btnMultiply.grid(row=4, column=3, pady=4, padx=4)
+            btnMultiply.grid(row=3, column=3, pady=4, padx=4)
             btn1.grid(row=5, column=0, pady=4, padx=4)
             btn2.grid(row=5, column=1, pady=4, padx=4)
             btn3.grid(row=5, column=2, pady=4, padx=4)
-            btnMinus.grid(row=5, column=3, pady=4, padx=4)
-            btn0.grid(row=6, column=0, pady=4, padx=4)
-            btnComma.grid(row=6, column=1, pady=4, padx=4)
-            btnEqual.grid(row=6, column=2, pady=4, padx=4)
-            btnPlus.grid(row=6, column=3, pady=4, padx=4)
+            btnMinus.grid(row=4, column=3, pady=4, padx=4)
+            btn0.grid(row=6, column=1, pady=4, padx=4)
+            btnComma.grid(row=6, column=2, pady=4, padx=4)
+            btnEqual.grid(row=6, column=3, pady=4, padx=4)
+            btnPlus.grid(row=5, column=3, pady=4, padx=4)
         
         creatingWidgets()
+        
+        
 
     creatingLogicAndWidgets()
         
