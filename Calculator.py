@@ -1,6 +1,3 @@
-#specual Clicked = jeżeli kliknięto już raz jakieś działąnie to trzeba kliknąć równasie się żeby dało się pisać dalej special click ma zliczać kliknięcia specjalnych symboli - przekazywane z tekstu symbolu - trzba napisać funkcję ===== lepiej będzie liczyć znaki specjalne za pomocą regexa tj +-*/ i jeśli będzie ich wiecej niż 2 (trzeba zastrzec że ten na początku się nie liczy -> jakiś slice na stringu pobranym żeby uciąć piewszy znak ) i wtedy zablokowac pisanie i zresetować po kliknięciu equal
-#odjąć 1 od countClicked kiedy następuje zmiana znaku z +- na - albo z -- na +
-
 
 #import library
 from tkinter import * 
@@ -33,11 +30,28 @@ def initApp():
     # make calculations
     def makeResult():
         global result
+
         #multiply and devide
         preResult = resultLabel.get()
         tempResult = re.findall(r"((\d*\.?\d*)(\*|\/|\+|\-){1}(\d*\.?\d*))",preResult)
-        print(preResult)
-        print(tempResult)
+
+        #multipy two minus
+        if (len(tempResult)>1):
+            if(tempResult[1][0] == "*"):
+                resultLabel.delete(0,END)
+                resultLabel.insert(0, float(tempResult[0][0])*float(tempResult[2][0]))
+                return
+        
+        #devide two minus
+        if (len(tempResult)>1):
+            if(tempResult[1][0] == "/"):
+                resultLabel.delete(0,END)
+                resultLabel.insert(0, float(tempResult[0][0])/float(tempResult[2][0]))
+                return
+
+        if (len(tempResult)>2):
+            del tempResult[1]
+        
 
         # ?mixed +*?
         if len(tempResult)>1:
@@ -64,7 +78,12 @@ def initApp():
                 if(tempResult[1][2] == "*"):
                     resultLabel.delete(0,END)
                     result = float(tempResult[0][3]) * float(tempResult[1][3])
-                    result = float(tempResult[0][1]) - result
+                    if (tempResult[0][1] == ''):
+                        resultLabel.delete(0,END)
+                        resultLabel.insert(0, -result)
+                        return
+                    else:
+                        result = float(tempResult[0][1]) - result
         # ?mixed -/?
         if len(tempResult)>1:
             if(tempResult[0][2] == "-"):
@@ -76,7 +95,12 @@ def initApp():
                     else:
                         resultLabel.delete(0,END)
                         result = float(tempResult[0][3]) / float(tempResult[1][3])
-                        result = float(tempResult[0][1]) - result
+                        if (tempResult[0][1] == ''):
+                            resultLabel.delete(0,END)
+                            resultLabel.insert(0, -result)
+                            return
+                        else:
+                            result = float(tempResult[0][1]) - result
         # ?mixed *+?
         if len(tempResult)>1:
             if(tempResult[0][2] == "*"):
@@ -89,8 +113,13 @@ def initApp():
             if(tempResult[0][2] == "*"):
                 if(tempResult[1][2] == "-"):
                     resultLabel.delete(0,END)
-                    result = float(tempResult[0][1]) * float(tempResult[0][3])
-                    result = result - float(tempResult[1][3]) 
+                    if (tempResult[0][3] == ''):
+                            resultLabel.delete(0,END)
+                            resultLabel.insert(0, float(tempResult[0][1]) * float(tempResult[1][0]) )
+                            return
+                    else:
+                        result = float(tempResult[0][1]) * float(tempResult[0][3])
+                        result = result - float(tempResult[1][3]) 
         # ?mixed /+?
         if len(tempResult)>1:
             if(tempResult[0][2] == "/"):
@@ -113,8 +142,13 @@ def initApp():
                         return
                     else:
                         resultLabel.delete(0,END)
-                        result = float(tempResult[0][1]) / float(tempResult[0][3])
-                        result = result - float(tempResult[1][3])
+                        if (tempResult[0][3] == ''):
+                            resultLabel.delete(0,END)
+                            resultLabel.insert(0, float(tempResult[0][1]) / float(tempResult[1][0]) )
+                            return
+                        else:
+                            result = float(tempResult[0][1]) / float(tempResult[0][3])
+                            result = result - float(tempResult[1][3])
                                      
 
 
@@ -147,15 +181,18 @@ def initApp():
                 else:
                     if result == "":
                         result = 0
-                    result = result / float(tempResult[1][3])
-        
-                    
+                    result = result / float(tempResult[1][3])          
         
         # +
         if(tempResult[0][2] == "+") and len(tempResult)<2:
             if result == "":
                 result = 0
-            result = result + float(tempResult[0][1])+float(tempResult[0][3])
+            if (tempResult[0][1] == ''):
+                    resultLabel.delete(0,END)
+                    resultLabel.insert(0, "Syntax ERROR!")
+                    return
+            else:
+                result = float(tempResult[0][1])+float(tempResult[0][3])
         # ++
         if len(tempResult)>1:
             if(tempResult[1][2] == "+"):
@@ -171,10 +208,15 @@ def initApp():
         # --
         if len(tempResult)>1:
             if(tempResult[1][2] == "-"):
-                if result == "":
-                    result = 0
-                result = float(tempResult[0][1]) - float(tempResult[0][3])
-                result = result - float(tempResult[1][3])        
+                if (tempResult[0][1] == ''):
+                    resultLabel.delete(0,END)
+                    resultLabel.insert(0, "Syntax ERROR!")
+                    return
+                else:
+                    if result == "":
+                        result = 0
+                    result = float(tempResult[0][1]) - float(tempResult[0][3])
+                    result = result - float(tempResult[1][3])        
 
 
 # WYNIK 
@@ -183,8 +225,7 @@ def initApp():
 
         # set countClicked
         global countClicked
-        countClicked = len(resultLabel.get())
-        print(result)
+        countClicked = len(resultLabel.get())    
         
         
 
@@ -211,6 +252,12 @@ def initApp():
         def buttonClick(number):
             global countClicked
             global countSpecialClicked
+
+            #max three operations
+            if (number == "+" or number == "-" or number == "*" or number == "/"):
+                countSpecialClicked += 1
+
+            
 
             if resultLabel.get() == "Math ERROR!":
                 resultLabel.delete(0,END)
@@ -256,16 +303,18 @@ def initApp():
                 if (resultLabel.get()[-1] == "." and number == "."):  
                     return
                 if (resultLabel.get()[-1] == "-" and number == "-"):
-                    print("nie wiem po co print ale bez niego nie działa")
+                    print("")
                     
                     
             
             #maximum digit in line to 18
-        
             countClicked += 1
-            print(countClicked)
             
-            if countClicked < 19 and countSpecialClicked < 1:
+            if countClicked < 19 :
+                if (countSpecialClicked > 2): 
+                    if (number == "+" or number == "-" or number == "/" or number == "*"):
+                        number = ""
+
                 
             
                 currentLabel = resultLabel.get()
@@ -276,6 +325,7 @@ def initApp():
                 tempLabel = resultLabel.get().replace("--","+")
                 resultLabel.delete(0,END)
                 resultLabel.insert(len(resultLabel.get()), tempLabel)
+                countClicked = len(resultLabel.get())
 
             
                 
@@ -284,6 +334,7 @@ def initApp():
                 tempLabel = resultLabel.get().replace("+-","-")
                 resultLabel.delete(0,END)
                 resultLabel.insert(len(resultLabel.get()), tempLabel)
+                countClicked = len(resultLabel.get())
 
                 
                 
@@ -292,6 +343,9 @@ def initApp():
                 tempLabel = resultLabel.get().replace("++","+")
                 resultLabel.delete(0,END)
                 resultLabel.insert(len(resultLabel.get()), tempLabel)
+                countClicked = len(resultLabel.get())
+
+                
 
                 
                 
@@ -306,37 +360,36 @@ def initApp():
 
             global result
             result = ""
+
+            global countSpecialClicked
+            countSpecialClicked = 0
             
 
         def buttonMemoryPlus():
             global memory
             if (len(resultLabel.get())>0):
-                memory = memory + int(resultLabel.get())
-                print(memory)
+                memory = memory + float(resultLabel.get())
             
 
         def buttonMemoryMinus():
             global memory
             if (len(resultLabel.get())>0):
-                memory = memory - int(resultLabel.get())
-                print(memory)
+                memory = memory - float(resultLabel.get())
         
         def buttonMemoryClear():
             global memory
             memory = 0
-            print(memory)
         
         def buttonMemorySave():
             global memory
             if (len(resultLabel.get())>0):
 
-                memory = int(resultLabel.get())
-                print(memory)
+                memory = float(resultLabel.get())
         
         def buttonMemoryRead():
-            
+            global memory
+            memory = "+" + str(memory)
             resultLabel.insert(len(resultLabel.get()), memory)
-            print(memory)
         
         def buttonChangeFirstSign():
             if (len(resultLabel.get()) > 0 and resultLabel.get()[0] == "+"):
@@ -354,7 +407,6 @@ def initApp():
             except:
                 return
             else:
-                print('llll')
                 temp = resultLabel.get()
                 resultLabel.delete(0,END)
                 resultLabel.insert(0, "-" + str(temp))
@@ -369,25 +421,19 @@ def initApp():
         def buttonEqual():
             #show result
             makeResult()
-            # resultLabel.delete(0,END)
-            # resultLabel.insert(0, str(makeResult()))
 
             global countClicked
             countClicked = len(resultLabel.get())
+
+            global countSpecialClicked
+            countSpecialClicked = 0
+
+        
             
 
 
 
         def creatingWidgets():
-
-            # #design font
-            # global designFont = font.Font(size=25, weight='bold')
-
-
-            # #create result place 
-            # resultLabel = Entry(mainWindow, width=20, font=designFont)
-            # resultLabel.grid(row=0, column=0, columnspan=4, padx=10, pady=15)
-
 
             #create buttons
             btnClear = Button(mainWindow, text="C", pady=10, width=4, font= designFont,  command=buttonClear, borderwidth=1, relief="solid", bg="#e8e8e8", activebackground="#8ff584")
