@@ -1,7 +1,5 @@
-#przepisać tworzenie przycisków na klasy i tworzenie obiektów z listy rzeczy do stworzenia
-#memory może narazie dodawać tylko pojedyncze liczby = najpierw powinno policzyć wyrażenie a dopiero potem je zapisać
-#działania na liczbach
-#dzielenie przez zero
+#specual Clicked = jeżeli kliknięto już raz jakieś działąnie to trzeba kliknąć równasie się żeby dało się pisać dalej special click ma zliczać kliknięcia specjalnych symboli - przekazywane z tekstu symbolu - trzba napisać funkcję ===== lepiej będzie liczyć znaki specjalne za pomocą regexa tj +-*/ i jeśli będzie ich wiecej niż 2 (trzeba zastrzec że ten na początku się nie liczy -> jakiś slice na stringu pobranym żeby uciąć piewszy znak ) i wtedy zablokowac pisanie i zresetować po kliknięciu equal
+#odjąć 1 od countClicked kiedy następuje zmiana znaku z +- na - albo z -- na +
 
 
 #import library
@@ -12,7 +10,9 @@ from math import *
 
 
 countClicked = 0
+countSpecialClicked = 0
 memory = 0
+result = ""
 
 #initialization Application
 def initApp():
@@ -32,25 +32,158 @@ def initApp():
 
     # make calculations
     def makeResult():
+        global result
         #multiply and devide
         preResult = resultLabel.get()
-        tempResult = re.findall(r"((\d*\.?\d*)(\*|\/){1}(\d*\.?\d*)){1,}",preResult)
-        # print(preResult)
-        # print(tempResult)
-        # print(tempResult[0][1])
-        # print(tempResult[0][2])
-        # print(tempResult[0][3])
-        if(tempResult[0][2] == "*"):
-            result = round(float(tempResult[0][1])*float(tempResult[0][3]))
-        if(tempResult[0][2] == "/"):
+        tempResult = re.findall(r"((\d*\.?\d*)(\*|\/|\+|\-){1}(\d*\.?\d*))",preResult)
+        print(preResult)
+        print(tempResult)
+
+        # ?mixed +*?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "+"):
+                if(tempResult[1][2] == "*"):
+                    resultLabel.delete(0,END)
+                    result = float(tempResult[0][3]) * float(tempResult[1][3])
+                    result = result + float(tempResult[0][1]) 
+        # ?mixed +/?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "+"):
+                if(tempResult[1][2] == "/"):
+                    if(tempResult[1][3] == "0"):
+                        resultLabel.delete(0,END)
+                        resultLabel.insert(0, "Math ERROR!")
+                        return
+                    else:
+                        resultLabel.delete(0,END)
+                        result = float(tempResult[0][3]) / float(tempResult[1][3])
+                        result = result + float(tempResult[0][1]) 
+        # ?mixed -*?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "-"):
+                if(tempResult[1][2] == "*"):
+                    resultLabel.delete(0,END)
+                    result = float(tempResult[0][3]) * float(tempResult[1][3])
+                    result = float(tempResult[0][1]) - result
+        # ?mixed -/?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "-"):
+                if(tempResult[1][2] == "/"):
+                    if(tempResult[1][3] == "0"):
+                        resultLabel.delete(0,END)
+                        resultLabel.insert(0, "Math ERROR!")
+                        return
+                    else:
+                        resultLabel.delete(0,END)
+                        result = float(tempResult[0][3]) / float(tempResult[1][3])
+                        result = float(tempResult[0][1]) - result
+        # ?mixed *+?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "*"):
+                if(tempResult[1][2] == "+"):
+                    resultLabel.delete(0,END)
+                    result = float(tempResult[0][1]) * float(tempResult[0][3])
+                    result = result + float(tempResult[1][3]) 
+        # ?mixed *-?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "*"):
+                if(tempResult[1][2] == "-"):
+                    resultLabel.delete(0,END)
+                    result = float(tempResult[0][1]) * float(tempResult[0][3])
+                    result = result - float(tempResult[1][3]) 
+        # ?mixed /+?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "/"):
+                if(tempResult[1][2] == "+"):
+                    if(tempResult[0][3] == "0"):
+                        resultLabel.delete(0,END)
+                        resultLabel.insert(0, "Math ERROR!")
+                        return
+                    else:
+                        resultLabel.delete(0,END)
+                        result = float(tempResult[0][1]) / float(tempResult[0][3])
+                        result = result + float(tempResult[1][3])
+        # ?mixed /-?
+        if len(tempResult)>1:
+            if(tempResult[0][2] == "/"):
+                if(tempResult[1][2] == "-"):
+                    if(tempResult[0][3] == "0"):
+                        resultLabel.delete(0,END)
+                        resultLabel.insert(0, "Math ERROR!")
+                        return
+                    else:
+                        resultLabel.delete(0,END)
+                        result = float(tempResult[0][1]) / float(tempResult[0][3])
+                        result = result - float(tempResult[1][3])
+                                     
+
+
+
+        # *
+        if(tempResult[0][2] == "*") and len(tempResult)<2:
+            result = float(tempResult[0][1])*float(tempResult[0][3])
+        # **
+        if len(tempResult)>1:
+            if(tempResult[1][2] == "*"):
+                if result == "":
+                    result = 1
+                result = result * float(tempResult[1][3])
+                
+        # /
+        if(tempResult[0][2] == "/") and len(tempResult)<2:
             if(tempResult[0][3] == "0"):
                 resultLabel.delete(0,END)
                 resultLabel.insert(0, "Math ERROR!")
                 return
             else:
-                result = round(float(tempResult[0][1])/float(tempResult[0][3]))
+                result = float(tempResult[0][1])/float(tempResult[0][3])
+        # //
+        if len(tempResult)>1:
+            if(tempResult[1][2] == "/"):
+                if(tempResult[1][3] == "0"):
+                    resultLabel.delete(0,END)
+                    resultLabel.insert(0, "Math ERROR!")
+                    return
+                else:
+                    if result == "":
+                        result = 0
+                    result = result / float(tempResult[1][3])
+        
+                    
+        
+        # +
+        if(tempResult[0][2] == "+") and len(tempResult)<2:
+            if result == "":
+                result = 0
+            result = result + float(tempResult[0][1])+float(tempResult[0][3])
+        # ++
+        if len(tempResult)>1:
+            if(tempResult[1][2] == "+"):
+                if result == "":
+                    result = 0
+                result = float(tempResult[0][1]) + float(tempResult[0][3])
+                result = result + float(tempResult[1][3])
+        # -
+        if(tempResult[0][2] == "-") and len(tempResult)<2:
+            if result == "":
+                result = 0
+            result = float(tempResult[0][1])-float(tempResult[0][3])
+        # --
+        if len(tempResult)>1:
+            if(tempResult[1][2] == "-"):
+                if result == "":
+                    result = 0
+                result = float(tempResult[0][1]) - float(tempResult[0][3])
+                result = result - float(tempResult[1][3])        
+
+
+# WYNIK 
         resultLabel.delete(0,END)
         resultLabel.insert(0, str(float(result)))
+
+        # set countClicked
+        global countClicked
+        countClicked = len(resultLabel.get())
         print(result)
         
         
@@ -77,6 +210,10 @@ def initApp():
         
         def buttonClick(number):
             global countClicked
+            global countSpecialClicked
+
+            if resultLabel.get() == "Math ERROR!":
+                resultLabel.delete(0,END)
             #Exeption double special sign
             if(len(resultLabel.get())>0):
     
@@ -128,7 +265,7 @@ def initApp():
             countClicked += 1
             print(countClicked)
             
-            if countClicked < 19:
+            if countClicked < 19 and countSpecialClicked < 1:
                 
             
                 currentLabel = resultLabel.get()
@@ -140,10 +277,24 @@ def initApp():
                 resultLabel.delete(0,END)
                 resultLabel.insert(len(resultLabel.get()), tempLabel)
 
+            
+                
+
+                #+-
+                tempLabel = resultLabel.get().replace("+-","-")
+                resultLabel.delete(0,END)
+                resultLabel.insert(len(resultLabel.get()), tempLabel)
+
+                
+                
+
                 # ++
                 tempLabel = resultLabel.get().replace("++","+")
                 resultLabel.delete(0,END)
                 resultLabel.insert(len(resultLabel.get()), tempLabel)
+
+                
+                
                 
             
             
@@ -152,6 +303,9 @@ def initApp():
             global countClicked
             countClicked = 0
             resultLabel.delete(0,END)
+
+            global result
+            result = ""
             
 
         def buttonMemoryPlus():
