@@ -34,7 +34,6 @@ def initApp():
         #multiply and devide
         preResult = resultLabel.get()
         tempResult = re.findall(r"((\d*\.?\d*)(\*|\/|\+|\-){1}(\d*\.?\d*))",preResult)
-
         #multipy two minus
         if (len(tempResult)>1):
             if(tempResult[1][0] == "*"):
@@ -201,12 +200,15 @@ def initApp():
                 result = float(tempResult[0][1]) + float(tempResult[0][3])
                 result = result + float(tempResult[1][3])
         # -
-        if(tempResult[0][2] == "-") and len(tempResult)<2:
+        if(tempResult[0][2] == "-") and len(tempResult)<3:
             if result == "":
                 result = 0
-            result = float(tempResult[0][1])-float(tempResult[0][3])
+            if (tempResult[0][1] == ''):
+                result = float(tempResult[0][0])-float(tempResult[1][0])
+            else:
+                result = float(tempResult[0][1])-float(tempResult[0][3])
         # --
-        if len(tempResult)>1:
+        if len(tempResult)>2:
             if(tempResult[1][2] == "-"):
                 if (tempResult[0][1] == ''):
                     resultLabel.delete(0,END)
